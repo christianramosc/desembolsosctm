@@ -284,54 +284,8 @@ def tarjetas_clientes(datos):
 
 
 def mostrar_reporte(nombre, datos, pdf_bytes, nombre_pdf, clave):
-    calc = datos["calculo"]
-    st.markdown(f"<div class='ubicacion'>📍 <b>{datos['pdv'] or 'PDV no identificado'}"
-                f"{' - ' + datos['pdv_num'] if datos['pdv_num'] else ''}</b> &nbsp;·&nbsp; "
-                f"📅 {datos['fecha_texto'] or 'Fecha no identificada'} &nbsp;·&nbsp; 📄 {nombre}</div>",
-                unsafe_allow_html=True)
-
-    if calc["reportado_transferencias"] is None:
-        st.warning(f"No se encontró el Total de Transferencias Bancarias en el PDF. "
-                   f"Total calculado: **{md(calc['total_calculado'])}**.", icon="⚠️")
-    elif datos["cuadra"]:
-        st.success(f"**El desglose cuadra.** La suma por cliente ({md(calc['total_calculado'])}) es igual "
-                   f"al Total de Transferencias Bancarias del reporte.", icon="✅")
-    else:
-        st.error(f"**El desglose no cuadra.** Diferencia de {md(calc['diferencia_final'])}. "
-                 f"Revisa la pestaña de conciliación.", icon="❌")
-
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("💵 Total financiado", drp.fmt(calc["suma_financiado"]), border=True)
-    m2.metric("🧾 Total retenciones", drp.fmt(calc["suma_retenciones"]), border=True)
-    m3.metric("🏦 Transferencias", drp.fmt(calc["total_calculado"]), border=True)
-    n = len(datos["clientes"])
-    m4.metric("👥 Créditos", f"{n} {'cliente' if n == 1 else 'clientes'}", border=True)
-
-    g1, g2 = st.columns([2, 3], gap="large")
-    with g1:
-        st.markdown("##### 🍩 ¿A dónde va el dinero financiado?")
-        st.altair_chart(grafica_dona(datos), width="stretch")
-    with g2:
-        st.markdown("##### 📊 Composición por cliente")
-        st.altair_chart(grafica_barras(datos), width="stretch")
-
-    t_res, t_con, t_det = st.tabs(["📋 Resumen por cliente", "🔎 Conciliación", "👤 Detalle por cliente"])
-    with t_res:
-        df = tabla_resumen(datos)
-        montos = [c for c in df.columns if c not in ("#", "Folio", "Titular", "Llega a la agencia")]
-        st.dataframe(
-            df.style.format(fmt_tabla, subset=montos),
-            hide_index=True, width="stretch",
-            column_config={"Llega a la agencia": st.column_config.ProgressColumn(
-                "Llega a la agencia", min_value=0, max_value=100, format="%.1f%%")},
-        )
-    with t_con:
-        dfc = tabla_conciliacion(datos)
-        st.dataframe(dfc.style.format(fmt_tabla, subset=["Suma del desglose", "Total del reporte", "Diferencia"]),
-                     hide_index=True, width="stretch")
-    with t_det:
-        tarjetas_clientes(datos)
-
+    # Sin vista previa: solo los botones de descarga.
+    # (Las funciones de gráficas y tablas siguen en el archivo por si se quieren reactivar.)
     d1, d2, _ = st.columns([1, 1, 2])
     d1.download_button("⬇️ Descargar PDF del desglose", pdf_bytes, file_name=nombre_pdf,
                        mime="application/pdf", type="primary", width="stretch", key=f"pdf_{clave}")
@@ -361,7 +315,7 @@ st.markdown(
 with st.sidebar:
     st.markdown(f"## <span class='marca'>@analytics<span>dotpy</span></span>", unsafe_allow_html=True)
     st.markdown("**Cómo usarla**\n1. Sube uno o varios Reportes de Operaciones (el nombre del archivo no importa).\n"
-                "2. Revisa las gráficas, la conciliación y el detalle.\n3. Descarga el PDF o el CSV.")
+                "2. Descarga el PDF o el CSV del desglose.")
     st.divider()
     st.link_button("📸 Sígueme en Instagram", INSTAGRAM_URL, width="stretch")
 
