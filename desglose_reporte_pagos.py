@@ -27,6 +27,7 @@ Autor: @analyticsdotpy
 --------------------------------------------------------------------------
 """
 
+import io
 import os
 import re
 import sys
@@ -157,12 +158,51 @@ def fecha_desde_texto(texto):
 # ==========================================================================
 # 3. LECTURA DEL REPORTE
 # ==========================================================================
+# Frases que siempre aparecen en el encabezado de un Reporte de Operaciones de Inbursa.
+# Se buscan en el texto del PDF (no en el nombre del archivo), así que el archivo
+# puede llamarse como sea.
+MARCAS_REPORTE = ("reporte de operaciones", "autoexpress")
+
+
+def _leer_bytes(origen):
+    """Acepta ruta, bytes o archivo tipo BytesIO y devuelve los bytes."""
+    if isinstance(origen, (bytes, bytearray)):
+        return bytes(origen)
+    if hasattr(origen, "read"):
+        if hasattr(origen, "seek"):
+            origen.seek(0)
+        return origen.read()
+    with open(origen, "rb") as fh:
+        return fh.read()
+
+
+def es_reporte_de_pagos(origen):
+    """Revisa el CONTENIDO del archivo (no su nombre).
+    Devuelve (True, lineas_de_texto) si es un Reporte de Operaciones;
+    si no, lanza ValueError con un mensaje claro."""
+    contenido = _leer_bytes(origen)
+    if not contenido.lstrip()[:5].startswith(b"%PDF"):
+        raise ValueError("El archivo no es un PDF (aunque tenga otra extensión o nombre).")
+    try:
+        lineas = []
+        with pdfplumber.open(io.BytesIO(contenido)) as pdf:
+            for pagina in pdf.pages:
+                lineas.extend((pagina.extract_text() or "").splitlines())
+    except Exception as e:
+        raise ValueError(f"No se pudo abrir el PDF (¿está dañado o protegido con contraseña?): {e}")
+    if not any(l.strip() for l in lineas):
+        raise ValueError("El PDF no tiene texto legible (parece escaneado o una imagen).")
+    texto = normalizar(" ".join(lineas[:40]))
+    if not all(m in texto for m in MARCAS_REPORTE):
+        raise ValueError("El PDF no parece un Reporte de Operaciones de Autoexpress Inbursa "
+                         "(no se encontró el encabezado 'REPORTE DE OPERACIONES').")
+    return True, lineas
+
+
 def extraer_reporte(origen):
-    """origen: ruta o archivo tipo bytes (BytesIO). Devuelve un dict con todo."""
-    lineas = []
-    with pdfplumber.open(origen) as pdf:
-        for pagina in pdf.pages:
-            lineas.extend((pagina.extract_text() or "").splitlines())
+    """origen: ruta, bytes o archivo tipo BytesIO. Devuelve un dict con todo.
+    La validación se hace leyendo el interior del PDF, no el nombre del archivo."""
+    _, lineas = es_reporte_de_pagos(origen)
 
     mapa_totales = {normalizar(etq): clave for clave, _, etq in CONCEPTOS}
     mapa_totales[normalizar(ETIQ_CANCELACIONES)] = "cancelaciones"
@@ -1096,19 +1136,16 @@ def main():
         en_colab = False
 
     if en_colab:
-        print("Sube uno o varios PDFs del Reporte de Operaciones (ReportePagos_*.pdf):")
+        print("Sube uno o varios PDFs del Reporte de Operaciones (pueden llamarse como sea):")
         subidos = files.upload()
         for nombre in subidos:
-            if not nombre.lower().endswith(".pdf"):
-                print(f"Se omite {nombre}: no es PDF.")
-                continue
             try:
                 salida = procesar(nombre)
                 files.download(salida)
             except Exception as e:
                 print(f"ERROR con {nombre}: {e}")
     else:
-        rutas = [a for a in sys.argv[1:] if a.lower().endswith(".pdf")]
+        rutas = [a for a in sys.argv[1:] if os.path.isfile(a)]
         if not rutas:
             print("Uso: python desglose_reporte_pagos.py ReportePagos_xxx.pdf [otro.pdf ...]")
             return

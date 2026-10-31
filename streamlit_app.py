@@ -360,7 +360,7 @@ st.markdown(
 
 with st.sidebar:
     st.markdown(f"## <span class='marca'>@analytics<span>dotpy</span></span>", unsafe_allow_html=True)
-    st.markdown("**Cómo usarla**\n1. Sube uno o varios `ReportePagos_*.pdf`.\n"
+    st.markdown("**Cómo usarla**\n1. Sube uno o varios Reportes de Operaciones (el nombre del archivo no importa).\n"
                 "2. Revisa las gráficas, la conciliación y el detalle.\n3. Descarga el PDF o el CSV.")
     st.divider()
     st.link_button("📸 Sígueme en Instagram", INSTAGRAM_URL, width="stretch")
@@ -368,8 +368,11 @@ with st.sidebar:
 tab_app, tab_apoyo = st.tabs(["📄 Desglose", "💛 Apoya el proyecto"])
 
 with tab_app:
-    archivos = st.file_uploader("Sube uno o varios Reportes de Operaciones (PDF)", type=["pdf"],
-                                accept_multiple_files=True)
+    # Sin filtro de extensión: el archivo puede llamarse como sea (o no tener ".pdf").
+    # Se valida leyendo su contenido.
+    archivos = st.file_uploader("Sube uno o varios Reportes de Operaciones (PDF)",
+                                accept_multiple_files=True,
+                                help="El nombre del archivo no importa: se revisa su contenido.")
     usar_ejemplo = False
     if not archivos and EJEMPLO.exists():
         st.caption("¿No tienes un reporte a la mano?")
