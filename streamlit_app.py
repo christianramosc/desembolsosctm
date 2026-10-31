@@ -326,7 +326,7 @@ with tab_app:
     # Se valida leyendo su contenido.
     archivos = st.file_uploader("Sube uno o varios Reportes de Operaciones (PDF)",
                                 accept_multiple_files=True,
-                                help="El nombre del archivo no importa: se revisa su contenido.")
+                                help="PDF del portal")
     usar_ejemplo = False
     if not archivos and EJEMPLO.exists():
         st.caption("¿No tienes un reporte a la mano?")
