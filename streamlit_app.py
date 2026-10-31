@@ -360,7 +360,6 @@ st.markdown(
 
 with st.sidebar:
     st.markdown(f"## <span class='marca'>@analytics<span>dotpy</span></span>", unsafe_allow_html=True)
-    st.caption("Análisis de datos con Python")
     st.markdown("**Cómo usarla**\n1. Sube uno o varios `ReportePagos_*.pdf`.\n"
                 "2. Revisa las gráficas, la conciliación y el detalle.\n3. Descarga el PDF o el CSV.")
     st.divider()
