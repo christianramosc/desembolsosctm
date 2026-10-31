@@ -364,7 +364,6 @@ with st.sidebar:
     st.markdown("**Cómo usarla**\n1. Sube uno o varios `ReportePagos_*.pdf`.\n"
                 "2. Revisa las gráficas, la conciliación y el detalle.\n3. Descarga el PDF o el CSV.")
     st.divider()
-    st.markdown("💛 ¿Te sirvió? En la pestaña **Apoya el proyecto** puedes hacer una donación voluntaria.")
     st.link_button("📸 Sígueme en Instagram", INSTAGRAM_URL, width="stretch")
 
 tab_app, tab_apoyo = st.tabs(["📄 Desglose", "💛 Apoya el proyecto"])
