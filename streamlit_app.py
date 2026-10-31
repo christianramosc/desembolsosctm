@@ -408,7 +408,7 @@ with tab_apoyo:
     seccion_donaciones()
 
 st.markdown(
-    f"<div class='pie'>Hecho por <a href='{INSTAGRAM_URL}' target='_blank' style='text-decoration:none'>"
+    f"<div class='pie'><a href='{INSTAGRAM_URL}' target='_blank' style='text-decoration:none'>"
     f"<span class='marca'>@analytics<span>dotpy</span></span></a> · Herramienta independiente, "
     f"no oficial de Autoexpress Inbursa · Tus archivos no se guardan.</div>",
     unsafe_allow_html=True,
